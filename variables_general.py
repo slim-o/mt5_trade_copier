@@ -1,19 +1,20 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import MetaTrader5 as mt5
+from pushover import Pushover
+
+po = Pushover("abkcrum6gvhtukc6y92eqexgrwes1a")
+po.user("uu9g36cgw2kvhawuxxn7fb3fe85hib")
 
 
 #IC Markets
 
-mt_account1 = 51648628
-mt_pass1 = '!84qyzkOtMphsD'
-mt_server1 = 'ICMarketsSC-Demo'
+mt_account1 = 7199072
+mt_pass1 = 'LIVd3WQR'
+mt_server1 = 'ICMarketsSC-MT5-2'
 terminal_path1 = 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe'
 
-mt_account2 = 51647342
-mt_pass2 = 'QJ&@5$qsE3Iht!'
-mt_server2 = 'ICMarketsSC-Demo'
-terminal_path2 = 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe'
+slave_accounts = [[1529039, '2X@*vXTK', 'VantageInternational-Live', 'C:/Program Files/Vantage International MT5/terminal64.exe', 0.1], [7219859, 'muzjez3v', 'ICMarketsSC-MT5-2', 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe', 1], [11056234, 'cuntWA1*', 'ICMarketsSC-MT5-4', 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe', 0.2]]
 
 ###########################################################################
 
@@ -26,7 +27,7 @@ imbalance_poi_pos = []
 imbalance_poi_neg = []
 
 ticket = 0
-time = 1
+#time = 1
 lot_sizerr = 9
 entry_price = 10
 stop_loss = 11
@@ -56,10 +57,10 @@ def retryable_initialize(max_retries, delay_seconds, terminal_path, a, b, c):
             authorized = mt5.login(login=a, password=b, server=c)
             #time.sleep(delay_seconds)
             if not authorized:
-                print("Failed to connect at account #{}, error code: {}".format(mt_account, mt5.last_error()))
+                print("Failed to connect at account #{}, error code: {}".format(a, mt5.last_error()))
             return True  # If successful, exit the loop and return True
         else:
-            print(f"Attempt {attempt} failed to initialize, error code: {mt5.last_error()}")
+            print(f"Attempt {attempt} failed to initialize, account: {a}, error code: {mt5.last_error()}")
             #ime.sleep(delay_seconds)  # Wait for the specified time before the next attempt
 
     raise MaxRetriesExceeded(f"Max retries ({max_retries}) reached. Initialization failed.")
@@ -86,28 +87,47 @@ class BidirectionalMap:
         self.reverse_map = {}
 
     def add_mapping(self, key1, key2):
-        self.forward_map[key1] = key2
-        self.reverse_map[key2] = key1
+        if key1 not in self.forward_map:
+            self.forward_map[key1] = []
+        self.forward_map[key1].append(key2)
+
+        if key2 not in self.reverse_map:
+            self.reverse_map[key2] = []
+        self.reverse_map[key2].append(key1)
 
     def get_value_by_key1(self, key1):
-        return self.forward_map.get(key1, None)
+        return self.forward_map.get(key1, [])
 
     def get_value_by_key2(self, key2):
-        return self.reverse_map.get(key2, None) 
+        return self.reverse_map.get(key2, [])
+
+class CurrencyPairMapping:
+    def __init__(self):
+        self.pair_mapping = {}
+
+    def add_pair_mapping(self, broker_name, original_pair_name, broker_specific_pair_name):
+        if broker_name not in self.pair_mapping:
+            self.pair_mapping[broker_name] = {}
+        self.pair_mapping[broker_name][original_pair_name] = broker_specific_pair_name
+
+    def get_broker_specific_pair_name(self, broker_name, original_pair_name):
+        broker_mapping = self.pair_mapping.get(broker_name, {})
+        return broker_mapping.get(original_pair_name, original_pair_name)
+
 
 def open_trade(symbol, lot_size=0.1, stop_loss=100, take_profit=100, deviation=20, b_s = None):
     global pipp, is_buy
     # Initialize MetaTrader 5
     is_buy = b_s
     print(f'IS IT A BUY?: {is_buy}')
-    try:
-        if not retryable_initialize(3, 5, terminal_path2, mt_account2, mt_pass2, mt_server2):
-            print("Initialization failed even after retries.")
-            #send_notification('Script Stopped', 'Initialisation failed')
-        else:
-            print("Initialization successful!")
-    except MaxRetriesExceeded as e:
-        print(e)
+    #try:
+    #    if not retryable_initialize(3, 5, terminal_path2, mt_account2, mt_pass2, mt_server2):
+    #        print("Initialization failed even after retries.")
+    #        #send_notification('Script Stopped', 'Initialisation failed')
+    #    else:
+    #        print("Initialization successful!")
+    #except MaxRetriesExceeded as e:
+    #    print(e)
     # Check if the symbol is available in MarketWatch
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
@@ -174,14 +194,7 @@ def open_trade(symbol, lot_size=0.1, stop_loss=100, take_profit=100, deviation=2
 def modify_trade(symbol = None, deviation=20, pos_ticket = None, new_stop = None, new_take = None):
     global pipp
     # Initialize MetaTrader 5
-    try:
-        if not retryable_initialize(3, 5, terminal_path2, mt_account2, mt_pass2, mt_server2):
-            print("Initialization failed even after retries.")
-            #send_notification('Script Stopped', 'Initialisation failed')
-        else:
-            print("Initialization successful!")
-    except MaxRetriesExceeded as e:
-        print(e)
+    
     # Check if the symbol is available in MarketWatch
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
@@ -266,6 +279,21 @@ def close_trade(ticket, symbol, lot, typee):
     if close_result.retcode != mt5.TRADE_RETCODE_DONE:
         print("Order send failed, retcode={}".format(close_result.retcode))
         print("Result:", close_result)
-    
 
-# Example of usage
+def send_notification(title, message):
+    msg = po.msg(message)
+    msg.set('title', title)
+    po.send(msg)
+
+pair_mapping_table = CurrencyPairMapping()
+
+# Add pair mappings for different brokers
+pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'EURUSD', 'EURUSD')
+pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'XAUUSD', 'XAUUSD')
+pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'US30', 'US30')
+pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'BTCUSD', 'BTCUSD')
+
+pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'EURUSD', 'EURUSD')
+pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'XAUUSD', 'XAUUSD+')
+pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'US30', 'DJ30')
+pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'BTCUSD', 'BTCUSD')
