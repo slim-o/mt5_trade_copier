@@ -34,15 +34,10 @@ def check_closed_positions():
 
         if not trade:
             print(f"Position closed: {trade_id}")
-            try:
-                position_symbol = mt5.history_orders_get(ticket=trade_id)
-                symbol = position_symbol[0][21]
-                closing_price = position_symbol[0][19]
-            except IndexError:
-                print(f"Error: Position symbol not found for trade ID {trade_id}")
-                continue
-            
-            text = f"🚨Position Closed🚨\n🚨EXIT TRADE🚨\n \nID: {trade_id}\nSymbol: {symbol}\nClosing Price: {closing_price}"
+            position_symbol = mt5.history_orders_get(ticket=trade_id)
+            print(position_symbol)
+                        
+            text = f"🚨Position Closed🚨\n🚨EXIT TRADE🚨\n \nID: {trade_id}\nSymbol: {position_symbol[0][21]}\nClosing Price: {position_symbol[0][19]}"
             #client.loop.run_until_complete(client.send_message(chat_id, text))
 
             # Update your logic for max_daily_loss and total_position_risk if needed
@@ -56,12 +51,13 @@ def check_closed_positions():
             for acc in slave_accounts:
                 retryable_initialize(3, 5, acc[3], acc[0], acc[1], acc[2])
                 new_pair_name = pair_mapping_table.get_broker_specific_pair_name(acc[2], tic[i][1])
-                try:
-                    position_symboll = mt5.history_orders_get(ticket=tic[i][0])
-                    close_trade(tic[i][0], new_pair_name, position_symboll[0][14] , position_symboll[0][6])
-                except IndexError:
-                    print(f"Error: Position symbol not found for trade ID: {tic[i][0]}")
-                    send_notification(f'TC: {acc[0]}, Not Closed', f'Error: Position symbol not found for trade ID: {tic[i][0]}')
+                position_symboll = mt5.history_orders_get(ticket=tic[i][0])
+                print(tic[i][0])
+                print(tic[i][1])
+                print(position_symboll[0][14])
+                print(position_symboll[0][6])
+                close_trade(tic[i][0], new_pair_name, position_symboll[0][14] , position_symboll[0][6])
+                print(1)
                 i += 1
 
 
@@ -98,7 +94,6 @@ if __name__ == '__main__':
                             print(acc[1])
                             print(acc[2])
                             print(acc[3])
-                            print(acc[4])
                             mt5.shutdown()
                             retryable_initialize(3, 5, acc[3], acc[0], acc[1], acc[2])
                             new_pair_name = pair_mapping_table.get_broker_specific_pair_name(acc[2], trade[current_symbol])
@@ -123,7 +118,6 @@ if __name__ == '__main__':
                             print(acc[1])
                             print(acc[2])
                             print(acc[3])
-                            print(acc[4])
                             mt5.shutdown()
                             retryable_initialize(3, 5, acc[3], acc[0], acc[1], acc[2])
                             new_pair_name = pair_mapping_table.get_broker_specific_pair_name(acc[2], trade[current_symbol])
@@ -150,7 +144,6 @@ if __name__ == '__main__':
                                     print(acc[1])
                                     print(acc[2])
                                     print(acc[3])
-                                    print(acc[4])
                                     
                                     mt5.shutdown()
                                     retryable_initialize(3, 5, acc[3], acc[0], acc[1], acc[2])
