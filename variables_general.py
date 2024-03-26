@@ -1,20 +1,16 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import MetaTrader5 as mt5
-from pushover import Pushover
-
-po = Pushover("abkcrum6gvhtukc6y92eqexgrwes1a")
-po.user("uu9g36cgw2kvhawuxxn7fb3fe85hib")
 
 
 #IC Markets
 
-mt_account1 = 7199072
-mt_pass1 = 'LIVd3WQR'
-mt_server1 = 'ICMarketsSC-MT5-2'
+mt_account1 = 51647342
+mt_pass1 = 'QJ&@5$qsE3Iht!'
+mt_server1 = 'ICMarketsSC-Demo'
 terminal_path1 = 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe'
 
-slave_accounts = [[1529039, '2X@*vXTK', 'VantageInternational-Live', 'C:/Program Files/Vantage International MT5/terminal64.exe', 0.1], [7219859, 'muzjez3v', 'ICMarketsSC-MT5-2', 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe', 1], [11056234, 'cuntWA1*', 'ICMarketsSC-MT5-4', 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe', 0.2]]
+slave_accounts = [[51648628, '!84qyzkOtMphsD', 'ICMarketsSC-Demo', 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe', 1]]
 
 ###########################################################################
 
@@ -279,12 +275,7 @@ def close_trade(ticket, symbol, lot, typee):
     if close_result.retcode != mt5.TRADE_RETCODE_DONE:
         print("Order send failed, retcode={}".format(close_result.retcode))
         print("Result:", close_result)
-
-def send_notification(title, message):
-    msg = po.msg(message)
-    msg.set('title', title)
-    po.send(msg)
-
+    
 pair_mapping_table = CurrencyPairMapping()
 
 # Add pair mappings for different brokers
@@ -292,6 +283,11 @@ pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'EURUSD', 'EURUSD')
 pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'XAUUSD', 'XAUUSD')
 pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'US30', 'US30')
 pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'BTCUSD', 'BTCUSD')
+
+pair_mapping_table.add_pair_mapping('ICMarketsSC-Demo', 'EURUSD', 'EURUSD')
+pair_mapping_table.add_pair_mapping('ICMarketsSC-Demo', 'XAUUSD', 'XAUUSD')
+pair_mapping_table.add_pair_mapping('ICMarketsSC-Demo', 'US30', 'US30')
+pair_mapping_table.add_pair_mapping('ICMarketsSC-Demo', 'BTCUSD', 'BTCUSD')
 
 pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'EURUSD', 'EURUSD')
 pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'XAUUSD', 'XAUUSD+')
