@@ -71,24 +71,30 @@ if __name__ == '__main__':
         print("Bot Started...")
 
         while True:
+            
             retryable_initialize(3, 5, terminal_path1, mt_account1, mt_pass1, mt_server1)
             # Monitor MT5 events (checking for new trades every 5 seconds)
+            
             trades = mt5.positions_get()
             is_buy = None
 
             for trade in trades:
                 trade_id = trade[0]
                 if trade_id not in logged_trades:
-                    if trade[5] == 1:
+                    if trade[5] < 2:
                         print('New trade')
                         logged_trades.append(trade_id)
+                        print(1)
                         double_logged_trades.append((trade_id, trade[stop_loss], trade[take_profit]))
+                        print(2)
                         text = f"🚨NEW SIGNAL🚨\n \nID: {trade_id}\nTYPE: *SELL*\nSYMBOL: {trade[current_symbol]}\nENTRY PRICE: {trade[entry_price]}\nTAKE PROFIT: {trade[take_profit]}\nSTOP LOSS: {trade[stop_loss]}"
+                        print(3)
                         #client.loop.run_until_complete(client.send_message(chat_id, text))
+                        print(4)
                         print(text)
                         #open sell trade on other
 
-                        is_buy = False
+                        is_buy = False if trade[5] == 1 else True
                         for acc in slave_accounts:
                             print(acc[0])
                             print(acc[1])
@@ -99,32 +105,10 @@ if __name__ == '__main__':
                             new_pair_name = pair_mapping_table.get_broker_specific_pair_name(acc[2], trade[current_symbol])
                             print(new_pair_name)
                             
-                            new_order = open_trade(symbol=new_pair_name, lot_size=(trade[lot_sizerr] * acc[4]), stop_loss = trade[stop_loss], take_profit = trade[take_profit], b_s = False)
+                            new_order = open_trade(symbol=new_pair_name, lot_size=round((trade[lot_sizerr] * acc[4]), 2), stop_loss = trade[stop_loss], take_profit = trade[take_profit], b_s = is_buy)
                             full_trade_log.add_mapping(trade_id, (new_order, trade[current_symbol]))
                         
 
-                    elif trade[5] == 0:
-                        print('New trade')
-                        logged_trades.append(trade_id)
-                        double_logged_trades.append((trade_id, trade[stop_loss], trade[take_profit]))
-                        text = f"🚨NEW SIGNAL🚨\n \nID: {trade_id}\nTYPE: *BUY*\nSYMBOL: {trade[current_symbol]}\nENTRY PRICE: {trade[entry_price]}\nTAKE PROFIT: {trade[take_profit]}\nSTOP LOSS: {trade[stop_loss]}"
-                        #client.loop.run_until_complete(client.send_message(chat_id, text))
-
-                        print(text)
-                        #open buy
-                        is_buy = True
-                        for acc in slave_accounts:
-                            print(acc[0])
-                            print(acc[1])
-                            print(acc[2])
-                            print(acc[3])
-                            mt5.shutdown()
-                            retryable_initialize(3, 5, acc[3], acc[0], acc[1], acc[2])
-                            new_pair_name = pair_mapping_table.get_broker_specific_pair_name(acc[2], trade[current_symbol])
-                            print(new_pair_name)
-
-                            new_order = open_trade(symbol=new_pair_name, lot_size=(trade[lot_sizerr] * acc[4]), stop_loss = trade[stop_loss], take_profit = trade[take_profit], b_s = True)
-                            full_trade_log.add_mapping(trade_id, (new_order, trade[current_symbol]))
                 else:
                     # Check if the trade stop loss or take profit has changed
                     for i, double_trade in enumerate(double_logged_trades):

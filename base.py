@@ -1,15 +1,16 @@
 import MetaTrader5 as mt5
-from telethon import TelegramClient, events
+#from telethon import TelegramClient, events
 import configparser
 import time
+from variables_general import *
 
 # Initializing Configuration
 
-terminal_path = 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe'
+terminal_path = 'C:/Program Files/VT Markets (Pty) MT5 Terminal/terminal64.exe'
 
-mt_account = 51647342
-mt_pass = 'QJ&@5$qsE3Iht!'
-mt_server = 'ICMarketsSC-Demo'
+mt_account = 894979
+mt_pass = 'Iq@b8rw&'
+mt_server = 'VTMarkets-Demo'
 
 logged_trades = []
 double_logged_trades = []

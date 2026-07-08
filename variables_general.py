@@ -5,12 +5,14 @@ import MetaTrader5 as mt5
 
 #IC Markets
 
-mt_account1 = 51647342
-mt_pass1 = 'QJ&@5$qsE3Iht!'
-mt_server1 = 'ICMarketsSC-Demo'
-terminal_path1 = 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe'
+mt_account1 = 894979
+mt_pass1 = 'Iq@b8rw&'
+mt_server1 = 'VTMarkets-Demo'
+terminal_path1 = 'C:/Program Files/VT Markets (Pty) MT5 Terminal/terminal64.exe'
 
-slave_accounts = [[51648628, '!84qyzkOtMphsD', 'ICMarketsSC-Demo', 'C:/Program Files/MetaTrader 5 IC Markets (SC)/terminal64.exe', 1]]
+
+slave_accounts = [[550119214, 'v9sWfpB*iXTyR2', 'FTMO-Server5', 'C:/Program Files/FTMO2/terminal64.exe', 0.1]]
+#slave_accounts = [[10850309, 'Lel0V*KY', 'VantageInternational-Demo', 'C:/Program Files/vantage6/terminal64.exe', 0.1]]
 
 ###########################################################################
 
@@ -279,6 +281,8 @@ def close_trade(ticket, symbol, lot, typee):
 pair_mapping_table = CurrencyPairMapping()
 
 # Add pair mappings for different brokers
+# SLAVE SERVER / MASTER PAIR / SLAVE PAIR
+'''
 pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'EURUSD', 'EURUSD')
 pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'XAUUSD', 'XAUUSD')
 pair_mapping_table.add_pair_mapping('ICMarketsSC-MT5-2', 'US30', 'US30')
@@ -293,3 +297,12 @@ pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'EURUSD', 'EURU
 pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'XAUUSD', 'XAUUSD+')
 pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'US30', 'DJ30')
 pair_mapping_table.add_pair_mapping('VantageInternational-Live', 'BTCUSD', 'BTCUSD')
+'''
+
+pair_mapping_table.add_pair_mapping('FTMO-Server5', 'EURUSD-VIP', 'EURUSD')
+pair_mapping_table.add_pair_mapping('FTMO-Server5', 'XAUUSD-VIP', 'XAUUSD')
+pair_mapping_table.add_pair_mapping('FTMO-Server5', 'GBPUSD-VIP', 'GBPUSD')
+
+pair_mapping_table.add_pair_mapping('VantageInternational-Demo', 'EURUSD-VIP', 'EURUSD+')
+pair_mapping_table.add_pair_mapping('VantageInternational-Demo', 'XAUUSD-VIP', 'XAUUSD+')
+pair_mapping_table.add_pair_mapping('VantageInternational-Demo', 'GBPUSD-VIP', 'GBPUSD+')
